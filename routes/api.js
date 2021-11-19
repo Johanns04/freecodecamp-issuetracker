@@ -1,7 +1,6 @@
 'use strict';
 require('dotenv').config();
 const mongoose = require('mongoose');
-//const ObjectId = require('mongodb').ObjectID;
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 const issueSchema = new mongoose.Schema({
@@ -16,13 +15,7 @@ const issueSchema = new mongoose.Schema({
 	updated_on: {type: Date, default: Date.now}
 });
 
-/* const projectSchema = new mongoose.Schema({
-	project_name: String,
-	project_issues: [issueSchema] 
-}); */
-
 const Issues = mongoose.model('Issues', issueSchema);
-//const Project = mongoose.model('Project', projectSchema);
 
 module.exports = function (app) {
 
@@ -32,7 +25,6 @@ module.exports = function (app) {
 		let project = req.params.project;
 		let searchQuery = {project_name: project};
 		
-		//let searchObj =
 		for(let x in req.query){
 			searchQuery[x] =  req.query[x];
 		}
@@ -48,9 +40,8 @@ module.exports = function (app) {
     
     .post(function (req, res){
 		let project = req.params.project;
-		//console.log("I'm here at 0A");
 		if(!req.body.issue_title || !req.body.issue_text || !req.body.created_by){
-			console.log("I'm in the 1A.");
+			console.log("Error");
 			res.send({error: 'required field(s) missing'});
 		}else{
 			let newIssue = new Issues({
@@ -65,7 +56,6 @@ module.exports = function (app) {
 			newIssue.save((err, data)=>{
 				if(err) console.log(err);
 				res.send(data);
-			//res.send(data);
 			});
 		}
 		
@@ -75,12 +65,6 @@ module.exports = function (app) {
     
     .put(function (req, res){
 		let project = req.params.project;
-		/*let jsonSend = {
-			result: 'successfully updated',
-			_id: req.body._id
-		};*/
-		
-
 		
 		if(!req.body._id){
 			
@@ -94,15 +78,13 @@ module.exports = function (app) {
 			Issues.find({_id: req.body._id, project_name: project}, function(err, issue){
 				try{
 					if(err){
-						console.log("I'm in here: A");
+						console.log("Error");
 						res.send({ 'error': 'could not update', '_id': req.body._id });
 					}
 					if(issue.length === 0){
-						console.log("I'm in here: B");
+						console.log("Error");
 						res.send({ 'error': 'could not update', '_id': req.body._id });
 					}else{
-						console.log("I'm in here: C");
-						//console.log(issue, " <== issue");
 						
 						issue[0].assigned_to = req.body.assigned_to;
 						issue[0].status_text = req.body.status_text;
@@ -113,13 +95,10 @@ module.exports = function (app) {
 						issue[0].updated_on = new Date();
 						issue[0].save();
 						
-						//send success
-						//res.send(jsonSend);
 						res.send({result: 'successfully updated', '_id': req.body._id})
 					}
 				}catch(e){
-					console.log("I'm in here: E2");
-					//res.send(e);
+					console.log("Error");
 				}
 
 			});
@@ -130,7 +109,6 @@ module.exports = function (app) {
     
     .delete(function (req, res){
 		let project = req.params.project;
-		//Issues.find({_id: req.body._id, project_name: project}).remove().exec();
 		let deleteError = {
 			error: 'could not delete',
 			_id: req.body._id
@@ -146,7 +124,7 @@ module.exports = function (app) {
 			Issues.remove({_id: req.body._id, project_name: project}, (err, data)=>{
 				try{
 					if(err){
-						console.log("I'm in here: D-A");
+						console.log("Error");
 						res.send(deleteError);
 					}
 					if(data.deletedCount === 0){
@@ -155,9 +133,8 @@ module.exports = function (app) {
 						res.send(deleteResult);
 					}
 				}catch(e){
-					console.log("I'm in Here: D-E")
+					console.log("Error")
 				}
-				//console.log(data.deletedCount, "<== Delete Data");	
 			});
 		}
 		
